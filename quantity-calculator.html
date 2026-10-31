@@ -62,7 +62,7 @@
   }
   .title-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 12px;
@@ -75,13 +75,93 @@
     text-align: left;
     flex-shrink: 0;
   }
+  .title-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+  }
   .subtitle {
     font-size: 13px;
     color: #94a3b8;
     margin: 0;
     text-align: right;
-    flex: 1;
     min-width: 0;
+  }
+  .settings-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: #94a3b8;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-btn:hover {
+    color: #e2e8f0;
+    border-color: #64748b;
+    background: #334155;
+  }
+  .settings-btn:active { transform: none; }
+  .settings-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    width: min(300px, calc(100vw - 48px));
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+  }
+  .settings-panel.open { display: block; }
+  .settings-panel h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid #334155;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .settings-row:first-of-type { border-top: none; padding-top: 0; }
+  .settings-row label { margin: 0; font-weight: 600; color: #cbd5e1; }
+  .settings-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #38bdf8;
+    cursor: pointer;
+  }
+  .settings-row input[type="number"] {
+    width: 72px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  .settings-hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #64748b;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
   h2 {
     margin: 0 0 16px;
@@ -269,15 +349,28 @@
     display: flex;
     flex-direction: column;
   }
+  .result-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+  }
+  /* Nudge only the lot-size title up; siblings keep their layout slots */
+  .result-main > .result-block:first-child {
+    position: relative;
+    top: -10px;
+  }
   .result-box .prog-box {
-    margin-top: auto;
+    margin-top: 0;
+    flex-shrink: 0;
   }
   .result-box h2 {
     margin-top: 0;
     color: #38bdf8;
     border: none;
     padding-bottom: 0;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-align: center;
   }
   .result-row {
@@ -295,14 +388,14 @@
     color: #38bdf8;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     text-align: center;
-    margin-top: 4px;
+    margin-top: 0;
     display: block;
   }
   .timer-label {
     color: #94a3b8;
     font-size: 12px;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 0;
     margin-bottom: 2px;
     display: block;
   }
@@ -313,7 +406,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     text-align: center;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 0;
   }
   .error-msg {
     color: #ef4444;
@@ -324,7 +417,7 @@
   }
   .error-msg.show { display: block; }
   .binance-trade {
-    margin-top: 12px;
+    margin-top: 0;
     padding-top: 10px;
     border-top: 1px solid #334155;
   }
@@ -561,7 +654,34 @@
   <div class="card">
     <div class="title-row">
       <h1>Quantity Calculator</h1>
-      <div id="clock-sub" class="subtitle">—</div>
+      <div class="title-right">
+        <button type="button" id="settings-btn" class="settings-btn" onclick="toggleSettings()" title="Settings" aria-label="Settings">⚙</button>
+        <div id="clock-sub" class="subtitle">—</div>
+        <div id="settings-panel" class="settings-panel" role="dialog" aria-label="Settings">
+          <h3>Settings</h3>
+          <div class="settings-row">
+            <label for="set-sound-candle">15m candle sound</label>
+            <input type="checkbox" id="set-sound-candle" checked onchange="onSettingsChange()">
+          </div>
+          <div class="settings-row">
+            <label for="set-sound-alert">Price alert sound</label>
+            <input type="checkbox" id="set-sound-alert" checked onchange="onSettingsChange()">
+          </div>
+          <div class="settings-row">
+            <label for="set-sound-tp">Take-profit sound</label>
+            <input type="checkbox" id="set-sound-tp" checked onchange="onSettingsChange()">
+          </div>
+          <div class="settings-row">
+            <label for="set-balance-lots">Balance only → lots</label>
+            <input type="checkbox" id="set-balance-lots" checked onchange="onSettingsChange()">
+          </div>
+          <div class="settings-row">
+            <label for="set-base-usd">Lots base USD</label>
+            <input type="number" id="set-base-usd" step="any" min="0.01" value="17" oninput="onSettingsChange()">
+          </div>
+          <div id="settings-hint" class="settings-hint">Lots = (Balance ÷ 17) × 5</div>
+        </div>
+      </div>
     </div>
     <div id="sound-toast" class="sound-toast" aria-live="polite"></div>
 
@@ -601,23 +721,28 @@
       </div>
 
       <div class="result-box">
-        <h2 id="q-result-title">Suggested Lot Size</h2>
-        <span id="q-val" class="result-value big">—</span>
-        <span class="timer-label">Next 15-min Candle (Binance)</span>
-        <span id="timer" class="timer-big">--:--</span>
-
-        <div class="binance-trade">
-          <div class="trade-header">
-            <span class="trade-symbol">1000PEPEUSDT</span>
-            <span class="live-status" title="Connecting…"><span id="bt-live" class="live-dot"></span><span id="bt-status">CONNECTING…</span></span>
+        <div class="result-main">
+          <div class="result-block">
+            <h2 id="q-result-title">Suggested Lot Size</h2>
+            <span id="q-val" class="result-value big">—</span>
           </div>
-          <div class="trade-row">
-            <span class="trade-label">Price</span>
-            <span id="bt-price" class="trade-value">--</span>
+          <div class="result-block">
+            <span class="timer-label">Next 15-min Candle (Binance)</span>
+            <span id="timer" class="timer-big">--:--</span>
           </div>
-          <div class="trade-row">
-            <span class="trade-label">24h Change</span>
-            <span id="bt-change" class="trade-change">--</span>
+          <div class="binance-trade result-block">
+            <div class="trade-header">
+              <span class="trade-symbol">1000PEPEUSDT</span>
+              <span class="live-status" title="Connecting…"><span id="bt-live" class="live-dot"></span><span id="bt-status">CONNECTING…</span></span>
+            </div>
+            <div class="trade-row">
+              <span class="trade-label">Price</span>
+              <span id="bt-price" class="trade-value">--</span>
+            </div>
+            <div class="trade-row">
+              <span class="trade-label">24h Change</span>
+              <span id="bt-change" class="trade-change">--</span>
+            </div>
           </div>
         </div>
 
@@ -654,6 +779,108 @@
   // Balance is sticky — survives Clear, refresh, and main-state wipes
   const BALANCE_KEY = 'quantityCalculator.balance.v1';
   const BALANCE_PCT_KEY = 'quantityCalculator.balancePct.v1';
+  const SETTINGS_KEY = 'quantityCalculator.settings.v1';
+  const DEFAULT_SETTINGS = {
+    soundCandle: true,
+    soundAlert: true,
+    soundTp: true,
+    balanceLots: true,
+    baseUsd: 17
+  };
+  let appSettings = Object.assign({}, DEFAULT_SETTINGS);
+
+  function getBaseUsd() {
+    const n = Number(appSettings.baseUsd);
+    return (isFinite(n) && n > 0) ? n : 17;
+  }
+
+  function updateSettingsHint() {
+    const el = document.getElementById('settings-hint');
+    if (!el) return;
+    el.textContent = appSettings.balanceLots
+      ? ('Lots = (Balance ÷ ' + getBaseUsd() + ') × 5')
+      : 'Balance-only lots off — fill Total Loss + Profit + Entry + TP';
+  }
+
+  function applySettingsToUI() {
+    const c = document.getElementById('set-sound-candle');
+    const a = document.getElementById('set-sound-alert');
+    const t = document.getElementById('set-sound-tp');
+    const b = document.getElementById('set-balance-lots');
+    const u = document.getElementById('set-base-usd');
+    if (c) c.checked = !!appSettings.soundCandle;
+    if (a) a.checked = !!appSettings.soundAlert;
+    if (t) t.checked = !!appSettings.soundTp;
+    if (b) b.checked = !!appSettings.balanceLots;
+    if (u) u.value = String(getBaseUsd());
+    updateSettingsHint();
+  }
+
+  function readSettingsFromUI() {
+    const c = document.getElementById('set-sound-candle');
+    const a = document.getElementById('set-sound-alert');
+    const t = document.getElementById('set-sound-tp');
+    const b = document.getElementById('set-balance-lots');
+    const u = document.getElementById('set-base-usd');
+    if (c) appSettings.soundCandle = !!c.checked;
+    if (a) appSettings.soundAlert = !!a.checked;
+    if (t) appSettings.soundTp = !!t.checked;
+    if (b) appSettings.balanceLots = !!b.checked;
+    if (u) {
+      const raw = String(u.value).trim();
+      if (raw !== '') {
+        const n = parseFloat(raw);
+        if (isFinite(n) && n > 0) appSettings.baseUsd = n;
+      }
+    }
+  }
+
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); } catch (e) {}
+  }
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d && typeof d === 'object') {
+          if (typeof d.soundCandle === 'boolean') appSettings.soundCandle = d.soundCandle;
+          if (typeof d.soundAlert === 'boolean') appSettings.soundAlert = d.soundAlert;
+          if (typeof d.soundTp === 'boolean') appSettings.soundTp = d.soundTp;
+          if (typeof d.balanceLots === 'boolean') appSettings.balanceLots = d.balanceLots;
+          const n = Number(d.baseUsd);
+          if (isFinite(n) && n > 0) appSettings.baseUsd = n;
+        }
+      }
+    } catch (e) {}
+    applySettingsToUI();
+  }
+
+  function toggleSettings() {
+    const panel = document.getElementById('settings-panel');
+    if (!panel) return;
+    panel.classList.toggle('open');
+  }
+
+  function onSettingsChange() {
+    readSettingsFromUI();
+    saveSettings();
+    updateSettingsHint();
+  }
+
+  function closeSettingsIfOutside(e) {
+    const panel = document.getElementById('settings-panel');
+    const btn = document.getElementById('settings-btn');
+    if (!panel || !panel.classList.contains('open')) return;
+    if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+    panel.classList.remove('open');
+  }
+
+  window.toggleSettings = toggleSettings;
+  window.onSettingsChange = onSettingsChange;
+  document.addEventListener('click', closeSettingsIfOutside);
+
   // Shared phone ↔ desktop sync (Supabase REST). Anon key is public-by-design.
   const SYNC_URL = 'https://api.jormatrimony.com/rest/v1/trade_calc_state';
   const SYNC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkyMDA1ODgyLCJleHAiOjE5NDk2ODU4ODJ9.i283EZr8ZT5bCB33nTNw3bkJHxchAisIfKP_mqHXumk';
@@ -1016,8 +1243,7 @@
     (ids || []).forEach(id => document.getElementById(id).classList.add('error'));
   }
 
-  // Lots = (Balance ÷ 17) × 5
-  const BASE_USD = 17;
+  // Lots = (Balance ÷ baseUsd) × 5  — baseUsd default 17, adjustable in Settings
   const BASE_LOTS = 5;
 
   function setResultTitle(title) {
@@ -1036,13 +1262,17 @@
     const hasBalance = !isNaN(balance);
     const othersEmpty = isNaN(loss) && isNaN(profit) && isNaN(entry) && isNaN(exit);
 
-    // Balance only → Suggested Lot Size = (Balance ÷ 17) × 5
+    // Balance only → Suggested Lot Size = (Balance ÷ baseUsd) × 5
     if (hasBalance && othersEmpty) {
+      if (!appSettings.balanceLots) {
+        showError('Fill Total Loss + Profit + Entry + TP (Balance-only lots is off in Settings).', ['q-loss', 'q-profit', 'q-entry', 'q-exit']);
+        return;
+      }
       if (balance <= 0) {
         showError('Balance must be greater than 0.', ['q-balance']);
         return;
       }
-      const lots = (balance / BASE_USD) * BASE_LOTS;
+      const lots = (balance / getBaseUsd()) * BASE_LOTS;
       setResultTitle('Suggested Lot Size');
       document.getElementById('q-val').textContent = lots.toLocaleString('en-US', {
         minimumFractionDigits: 0,
@@ -1058,7 +1288,12 @@
     if (isNaN(entry)) missing.push('q-entry');
     if (isNaN(exit)) missing.push('q-exit');
     if (missing.length) {
-      showError('Fill Balance only for lots, or fill Total Loss + Profit + Entry + TP.', missing);
+      showError(
+        appSettings.balanceLots
+          ? 'Fill Balance only for lots, or fill Total Loss + Profit + Entry + TP.'
+          : 'Fill Total Loss + Profit + Entry + TP.',
+        missing
+      );
       return;
     }
 
@@ -1235,6 +1470,7 @@
 
   // 1) New 15-min candle — two mid beeps (never on Clear / price edits)
   function playCandleSound() {
+    if (!appSettings.soundCandle) return;
     try {
       playTone(660, 0.18, 'sine', 0.16, 0);
       playTone(880, 0.22, 'sine', 0.16, 0.2);
@@ -1340,6 +1576,7 @@
   // 2) Price alert — harsh repeating beep (armed + sustained breach)
   let alertBreachSince = 0; // require sustained breach (ignore single-tick wicks)
   function playAlertBeep() {
+    if (!appSettings.soundAlert) return;
     try { playTone(920, 0.22, 'square', 0.12, 0); } catch (e) {}
   }
 
@@ -1395,6 +1632,7 @@
   }
 
   function playTpSuccessSound() {
+    if (!appSettings.soundTp) return;
     const now = Date.now();
     if (now - lastTpChimeAt < 4000) return;
     lastTpChimeAt = now;
@@ -1929,6 +2167,7 @@
   setInterval(updateClockSubtitle, 1000);
 
   // Restore inputs / size / alert after refresh (Clear is the only wipe)
+  loadSettings();
   loadState();
   loadBalancePersist(); // sticky Balance always wins over cleared main state
   alertDismissed = !!window.__alertDismissed;

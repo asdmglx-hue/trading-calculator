@@ -672,10 +672,6 @@
             <input type="checkbox" id="set-sound-tp" checked onchange="onSettingsChange()">
           </div>
           <div class="settings-row">
-            <label for="set-balance-lots">Balance only → lots</label>
-            <input type="checkbox" id="set-balance-lots" checked onchange="onSettingsChange()">
-          </div>
-          <div class="settings-row">
             <label for="set-base-usd">Lots base USD</label>
             <input type="number" id="set-base-usd" step="any" min="0.01" value="17" oninput="onSettingsChange()">
           </div>
@@ -784,7 +780,6 @@
     soundCandle: true,
     soundAlert: true,
     soundTp: true,
-    balanceLots: true,
     baseUsd: 17
   };
   let appSettings = Object.assign({}, DEFAULT_SETTINGS);
@@ -797,21 +792,17 @@
   function updateSettingsHint() {
     const el = document.getElementById('settings-hint');
     if (!el) return;
-    el.textContent = appSettings.balanceLots
-      ? ('Lots = (Balance ÷ ' + getBaseUsd() + ') × 5')
-      : 'Balance-only lots off — fill Total Loss + Profit + Entry + TP';
+    el.textContent = 'Lots = (Balance ÷ ' + getBaseUsd() + ') × 5';
   }
 
   function applySettingsToUI() {
     const c = document.getElementById('set-sound-candle');
     const a = document.getElementById('set-sound-alert');
     const t = document.getElementById('set-sound-tp');
-    const b = document.getElementById('set-balance-lots');
     const u = document.getElementById('set-base-usd');
     if (c) c.checked = !!appSettings.soundCandle;
     if (a) a.checked = !!appSettings.soundAlert;
     if (t) t.checked = !!appSettings.soundTp;
-    if (b) b.checked = !!appSettings.balanceLots;
     if (u) u.value = String(getBaseUsd());
     updateSettingsHint();
   }
@@ -820,12 +811,10 @@
     const c = document.getElementById('set-sound-candle');
     const a = document.getElementById('set-sound-alert');
     const t = document.getElementById('set-sound-tp');
-    const b = document.getElementById('set-balance-lots');
     const u = document.getElementById('set-base-usd');
     if (c) appSettings.soundCandle = !!c.checked;
     if (a) appSettings.soundAlert = !!a.checked;
     if (t) appSettings.soundTp = !!t.checked;
-    if (b) appSettings.balanceLots = !!b.checked;
     if (u) {
       const raw = String(u.value).trim();
       if (raw !== '') {
@@ -848,7 +837,6 @@
           if (typeof d.soundCandle === 'boolean') appSettings.soundCandle = d.soundCandle;
           if (typeof d.soundAlert === 'boolean') appSettings.soundAlert = d.soundAlert;
           if (typeof d.soundTp === 'boolean') appSettings.soundTp = d.soundTp;
-          if (typeof d.balanceLots === 'boolean') appSettings.balanceLots = d.balanceLots;
           const n = Number(d.baseUsd);
           if (isFinite(n) && n > 0) appSettings.baseUsd = n;
         }
@@ -1264,10 +1252,6 @@
 
     // Balance only → Suggested Lot Size = (Balance ÷ baseUsd) × 5
     if (hasBalance && othersEmpty) {
-      if (!appSettings.balanceLots) {
-        showError('Fill Total Loss + Profit + Entry + TP (Balance-only lots is off in Settings).', ['q-loss', 'q-profit', 'q-entry', 'q-exit']);
-        return;
-      }
       if (balance <= 0) {
         showError('Balance must be greater than 0.', ['q-balance']);
         return;
@@ -1288,12 +1272,7 @@
     if (isNaN(entry)) missing.push('q-entry');
     if (isNaN(exit)) missing.push('q-exit');
     if (missing.length) {
-      showError(
-        appSettings.balanceLots
-          ? 'Fill Balance only for lots, or fill Total Loss + Profit + Entry + TP.'
-          : 'Fill Total Loss + Profit + Entry + TP.',
-        missing
-      );
+      showError('Fill Balance only for lots, or fill Total Loss + Profit + Entry + TP.', missing);
       return;
     }
 

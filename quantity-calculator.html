@@ -1,43 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Qty Calc">
 <title>Quantity Calculator</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg?v=3">
+<!-- sound-fix-v3 -->
 <style>
   * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #0f172a;
     color: #f8fafc;
     margin: 0;
-    padding: 16px;
-    min-height: 100vh;
+    padding: 12px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    touch-action: manipulation;
   }
   .container {
     max-width: 820px;
     width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
   .card {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 24px;
+    padding: 16px 20px;
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
   }
   h1 {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 20px;
     color: #38bdf8;
-    text-align: center;
+    text-align: left;
+    flex-shrink: 0;
   }
   .subtitle {
     font-size: 13px;
     color: #94a3b8;
-    margin-bottom: 24px;
-    text-align: center;
+    margin: 0;
+    text-align: right;
+    flex: 1;
+    min-width: 0;
   }
   h2 {
     margin: 0 0 16px;
@@ -60,20 +104,104 @@
   .layout {
     display: grid;
     grid-template-columns: 1fr 320px;
-    gap: 24px;
-    align-items: start;
+    gap: 16px;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
   @media (max-width: 640px) {
     .layout {
       grid-template-columns: 1fr;
+      align-items: start;
+      overflow: hidden;
     }
+    .result-box {
+      height: auto;
+      overflow: hidden;
+    }
+    .timer-big { font-size: 36px !important; }
   }
   .inputs {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
+    min-height: 0;
   }
   .input-group { margin-bottom: 0; }
+  .balance-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #334155;
+    /* Match space under normal inputs */
+    min-height: 42px;
+    padding-bottom: 14px;
+  }
+  .balance-head h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .balance-head input {
+    flex: 1;
+    min-width: 0;
+  }
+  .balance-head input.balance-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+    flex: 0;
+  }
+  .balance-display {
+    font-size: 18px;
+    font-weight: 800;
+    color: #38bdf8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    cursor: pointer;
+    user-select: none;
+  }
+  .balance-display[hidden] { display: none !important; }
+  .balance-pct {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    margin-left: 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .balance-pct.up { color: #4ade80; }
+  .balance-pct.down { color: #ef4444; }
+  .balance-pct.flat { color: #94a3b8; }
+  .balance-pct[hidden] { display: none !important; }
+  .balance-value-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .balance-value-wrap[hidden] { display: none !important; }
+  .balance-reset {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    width: auto;
+  }
+  .balance-reset:hover {
+    color: #f8fafc;
+    background: none;
+  }
+  .balance-reset:active { transform: none; }
   label {
     display: block;
     font-size: 13px;
@@ -93,6 +221,13 @@
   }
   input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
   input.error { border-color: #ef4444; }
+  /* Hide number input spinners */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .btn-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -127,14 +262,22 @@
     background: #0f172a;
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 20px;
+    padding: 14px 16px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .result-box .prog-box {
+    margin-top: auto;
   }
   .result-box h2 {
     margin-top: 0;
     color: #38bdf8;
     border: none;
     padding-bottom: 0;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     text-align: center;
   }
   .result-row {
@@ -147,42 +290,30 @@
   .result-label { color: #94a3b8; }
   .result-value { font-weight: 700; color: #e2e8f0; }
   .big {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     color: #38bdf8;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 4px;
     display: block;
-  }
-  .result-coins {
-    display: block;
-    text-align: center;
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 6px;
-  }
-  .result-coins strong {
-    color: #e2e8f0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-weight: 700;
   }
   .timer-label {
     color: #94a3b8;
     font-size: 12px;
     text-align: center;
-    margin-top: 16px;
-    margin-bottom: 4px;
+    margin-top: 10px;
+    margin-bottom: 2px;
     display: block;
   }
   .timer-big {
-    font-size: 52px;
+    font-size: 44px;
     font-weight: 900;
     color: #4ade80;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     text-align: center;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   .error-msg {
     color: #ef4444;
@@ -193,8 +324,8 @@
   }
   .error-msg.show { display: block; }
   .binance-trade {
-    margin-top: 20px;
-    padding-top: 16px;
+    margin-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid #334155;
   }
   .trade-header {
@@ -224,14 +355,24 @@
   }
   .trade-change.up { color: #4ade80; }
   .trade-change.down { color: #ef4444; }
+  .live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+  }
+  .live-status.on { color: #4ade80; }
+  .live-status.off { color: #f87171; }
   .live-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
     background: #64748b;
     display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
+    flex-shrink: 0;
   }
   .live-dot.on {
     background: #4ade80;
@@ -244,48 +385,173 @@
     70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
     100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
   }
-  .vol-box {
-    margin-top: 16px;
-    padding-top: 14px;
+  .prog-box {
+    margin-top: 10px;
+    padding-top: 10px;
     border-top: 1px solid #334155;
   }
-  .vol-title {
+  .prog-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+  .prog-title {
     font-size: 12px;
     color: #94a3b8;
-    text-align: center;
-    margin-bottom: 10px;
+    text-align: left;
+    margin-bottom: 8px;
   }
-  .vol-badge {
+  .prog-badge {
     display: block;
-    text-align: center;
-    font-size: 18px;
+    text-align: left;
+    font-size: 20px;
     font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     letter-spacing: 0.02em;
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid #334155;
     background: #1e293b;
-    color: #e2e8f0;
+    color: #94a3b8;
+    min-height: 42px;
+    line-height: 20px;
+    box-sizing: border-box;
   }
-  .vol-badge.very-low {
-    color: #38bdf8;
-    border-color: rgba(56, 189, 248, 0.4);
-    background: rgba(56, 189, 248, 0.08);
-  }
-  .vol-badge.low {
+  .prog-badge.up {
     color: #4ade80;
     border-color: rgba(74, 222, 128, 0.35);
     background: rgba(74, 222, 128, 0.08);
   }
-  .vol-badge.medium {
-    color: #fbbf24;
-    border-color: rgba(251, 191, 36, 0.4);
-    background: rgba(251, 191, 36, 0.08);
-  }
-  .vol-badge.high {
+  .prog-badge.down {
     color: #f87171;
     border-color: rgba(248, 113, 113, 0.45);
     background: rgba(248, 113, 113, 0.1);
+  }
+  .prog-badge.hit {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.4);
+    background: rgba(56, 189, 248, 0.08);
+  }
+  .alert-input {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    color: #f8fafc;
+    font-size: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    outline: none;
+  }
+  .alert-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
+  .alert-input.armed { border-color: #64748b; }
+  .alert-input.firing {
+    border-color: #ef4444;
+    color: #f87171;
+    animation: alertPulse 1s ease-in-out infinite;
+  }
+  @keyframes alertPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); }
+  }
+  .alert-dismiss {
+    display: none;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 1px solid rgba(248, 113, 113, 0.55);
+    background: rgba(248, 113, 113, 0.15);
+    color: #fca5a5;
+    cursor: pointer;
+  }
+  .alert-dismiss.show { display: block; }
+  .alert-dismiss:hover { background: rgba(248, 113, 113, 0.28); color: #fecaca; }
+  .alert-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    min-height: 28px;
+    margin-bottom: 8px;
+  }
+  .alert-title-row .prog-title { margin-bottom: 0; }
+  .alert-dir-arrow {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .alert-dir-arrow:hover {
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .alert-slot.firing .alert-input,
+  .alert-slot.firing .alert-dir-arrow { display: none; }
+  .alert-slot.firing .alert-dismiss { display: block; }
+  .sound-toast {
+    display: none;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #94a3b8;
+  }
+  .sound-toast.show {
+    display: block;
+    color: #e2e8f0;
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+  }
+  .phone-bar {
+    margin-top: 8px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .phone-chip {
+    min-height: 36px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #475569;
+    background: #1e293b;
+    color: #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .phone-chip.on {
+    border-color: #4ade80;
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+  }
+  .phone-chip:hover { border-color: #38bdf8; }
+  .phone-tip {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.35;
+    text-align: center;
+    width: 100%;
   }
 </style>
 </head>
@@ -293,47 +559,57 @@
 
 <div class="container">
   <div class="card">
-    <h1>Quantity Calculator</h1>
-    <div class="subtitle">Quantity = ((Total Loss + Desired Profit) × Entry) / |Take Profit − Entry|</div>
+    <div class="title-row">
+      <h1>Quantity Calculator</h1>
+      <div id="clock-sub" class="subtitle">—</div>
+    </div>
+    <div id="sound-toast" class="sound-toast" aria-live="polite"></div>
 
     <div class="layout">
       <div class="inputs">
-        <h2>Inputs</h2>
+        <div class="balance-head">
+          <h2>Balance</h2>
+          <input type="number" id="q-balance" step="any" oninput="onBalanceInput()" onblur="commitBalanceDisplay()" onkeydown="balanceKeydown(event)" aria-label="Balance">
+          <span id="q-balance-value-wrap" class="balance-value-wrap" hidden>
+            <span id="q-balance-display" class="balance-display" onclick="editBalance()" title="Tap to edit"></span>
+            <span id="q-balance-pct" class="balance-pct" hidden onclick="editBalance()" title="Tap to edit"></span>
+          </span>
+          <button type="button" class="balance-reset" onclick="resetBalance()" title="Reset balance and percentage">Reset</button>
+        </div>
 
         <div class="input-group">
           <label>Total Loss</label>
-          <input type="number" id="q-loss" step="any" placeholder="e.g. 50" oninput="clearError()">
+          <input type="number" id="q-loss" step="any" placeholder="e.g. 50" oninput="onSizingInputs()">
         </div>
         <div class="input-group">
           <label>Desired Profit</label>
-          <input type="number" id="q-profit" step="any" placeholder="e.g. 100" oninput="clearError()">
+          <input type="number" id="q-profit" step="any" placeholder="e.g. 100" oninput="onSizingInputs()">
         </div>
         <div class="input-group">
           <label>Entry</label>
-          <input type="number" id="q-entry" step="any" placeholder="e.g. 1.2500" oninput="clearError()">
+          <input type="number" id="q-entry" step="any" placeholder="e.g. 1.2500" oninput="onTradeInputs()">
         </div>
         <div class="input-group">
           <label>Take Profit</label>
-          <input type="number" id="q-exit" step="any" placeholder="e.g. 1.2600" oninput="clearError()">
+          <input type="number" id="q-exit" step="any" placeholder="e.g. 1.2600" oninput="onTradeInputs()">
         </div>
+        <div id="q-error" class="error-msg">Take Profit cannot equal Entry (division by zero).</div>
         <div class="btn-row">
           <button type="button" class="secondary" onclick="clearInputs()">Clear</button>
           <button type="button" onclick="calcQuantity()">Calculate</button>
         </div>
-        <div id="q-error" class="error-msg">Take Profit cannot equal Entry (division by zero).</div>
       </div>
 
       <div class="result-box">
-        <h2>Suggested Size (USDT)</h2>
+        <h2 id="q-result-title">Suggested Lot Size</h2>
         <span id="q-val" class="result-value big">—</span>
-        <span id="q-coins" class="result-coins">Coins to enter: —</span>
-        <span class="timer-label">Next 15-min Candle (PKT)</span>
+        <span class="timer-label">Next 15-min Candle (Binance)</span>
         <span id="timer" class="timer-big">--:--</span>
 
         <div class="binance-trade">
           <div class="trade-header">
-            <span class="trade-symbol"><span id="bt-live" class="live-dot" title="Connecting…"></span>1000PEPEUSDT</span>
-            <span id="bt-status">connecting…</span>
+            <span class="trade-symbol">1000PEPEUSDT</span>
+            <span class="live-status" title="Connecting…"><span id="bt-live" class="live-dot"></span><span id="bt-status">CONNECTING…</span></span>
           </div>
           <div class="trade-row">
             <span class="trade-label">Price</span>
@@ -345,27 +621,390 @@
           </div>
         </div>
 
-        <div class="vol-box">
-          <div class="vol-title">Volatility · 15-min · 1000PEPEUSDT</div>
-          <span id="vol-badge" class="vol-badge">Loading…</span>
+        <div class="prog-box">
+          <div class="prog-row">
+            <div class="prog-col alert-slot" id="alert-slot">
+              <div class="alert-title-row">
+                <div class="prog-title">Price alert</div>
+                <button type="button" id="alert-dir-btn" class="alert-dir-arrow" onclick="toggleAlertDir()" title="Alert when price goes below" aria-label="Alert direction">↓</button>
+              </div>
+              <input type="number" id="alert-level" class="alert-input" step="any" placeholder="Price" oninput="onAlertLevelInput()">
+              <button type="button" id="alert-dismiss" class="alert-dismiss" onclick="dismissPriceAlert()">Dismiss</button>
+            </div>
+            <div class="prog-col">
+              <div class="alert-title-row">
+                <div class="prog-title">Target progress</div>
+              </div>
+              <span id="prog-badge" class="prog-badge">—</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="phone-bar">
+    <button type="button" id="install-btn" class="phone-chip" onclick="promptInstall()" hidden>Install app</button>
+    <div id="ios-install-tip" class="phone-tip" hidden>iPhone: tap Share → Add to Home Screen (keeps alerts more reliable)</div>
+  </div>
 </div>
 
 <script>
+  const STORE_KEY = 'quantityCalculator.v1';
+  // Balance is sticky — survives Clear, refresh, and main-state wipes
+  const BALANCE_KEY = 'quantityCalculator.balance.v1';
+  const BALANCE_PCT_KEY = 'quantityCalculator.balancePct.v1';
+  // Shared phone ↔ desktop sync (Supabase REST). Anon key is public-by-design.
+  const SYNC_URL = 'https://api.jormatrimony.com/rest/v1/trade_calc_state';
+  const SYNC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkyMDA1ODgyLCJleHAiOjE5NDk2ODU4ODJ9.i283EZr8ZT5bCB33nTNw3bkJHxchAisIfKP_mqHXumk';
+  const SYNC_ROW = 'main';
+
+  let syncUpdatedAt = 0;
+  let syncPushTimer = null;
+  let syncApplying = false;
+
   function clearError() {
     document.getElementById('q-error').classList.remove('show');
     document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
   }
 
+  function collectState() {
+    return {
+      balance: document.getElementById('q-balance').value,
+      loss: document.getElementById('q-loss').value,
+      profit: document.getElementById('q-profit').value,
+      entry: document.getElementById('q-entry').value,
+      exit: document.getElementById('q-exit').value,
+      alert: document.getElementById('alert-level').value,
+      alertDir: (typeof getAlertDir === 'function' ? getAlertDir() : (window.__alertDir || 'below')),
+      qty: document.getElementById('q-val').textContent,
+      resultTitle: (document.getElementById('q-result-title') || {}).textContent || '',
+      alertDismissed: !!window.__alertDismissed,
+      updatedAt: Date.now()
+    };
+  }
+
+  function applyState(d, opts) {
+    opts = opts || {};
+    if (!d || typeof d !== 'object') return;
+    syncApplying = true;
+    try {
+      // Never wipe sticky Balance with an empty sync/clear payload
+      if (d.balance != null && String(d.balance).trim() !== '') {
+        document.getElementById('q-balance').value = d.balance;
+        // commitBalanceDisplay compares vs last committed, then saves
+        if (typeof commitBalanceDisplay === 'function') commitBalanceDisplay();
+        else if (typeof saveBalancePersist === 'function') saveBalancePersist();
+      }
+      if (d.loss != null) document.getElementById('q-loss').value = d.loss;
+      if (d.profit != null) document.getElementById('q-profit').value = d.profit;
+      if (d.entry != null) document.getElementById('q-entry').value = d.entry;
+      if (d.exit != null) document.getElementById('q-exit').value = d.exit;
+      if (d.alert != null) document.getElementById('alert-level').value = d.alert;
+      if (d.qty) document.getElementById('q-val').textContent = d.qty;
+      if (d.resultTitle) setResultTitle(d.resultTitle);
+      window.__alertDismissed = !!d.alertDismissed;
+      window.__alertDir = (d.alertDir === 'above') ? 'above' : 'below';
+      if (typeof setAlertDir === 'function') setAlertDir(window.__alertDir, true);
+      else if (typeof applyAlertDirUI === 'function') applyAlertDirUI(window.__alertDir);
+      if (typeof alertDismissed !== 'undefined') alertDismissed = !!d.alertDismissed;
+      if (d.updatedAt) syncUpdatedAt = Number(d.updatedAt) || syncUpdatedAt;
+      if (!opts.skipProgress && typeof updateTargetProgress === 'function') updateTargetProgress();
+      if (!opts.skipAlert && typeof checkPriceAlert === 'function') checkPriceAlert();
+    } finally {
+      syncApplying = false;
+    }
+  }
+
+  function syncHeaders(extra) {
+    const h = {
+      apikey: SYNC_ANON,
+      Authorization: 'Bearer ' + SYNC_ANON,
+      'Content-Type': 'application/json'
+    };
+    if (extra) Object.assign(h, extra);
+    return h;
+  }
+
+  function saveState() {
+    if (syncApplying) return;
+    const state = collectState();
+    syncUpdatedAt = state.updatedAt;
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    } catch (e) {}
+    scheduleSyncPush(state);
+  }
+
+  function scheduleSyncPush(state) {
+    if (!SYNC_ANON || SYNC_ANON.indexOf('__SYNC_') === 0) return;
+    if (syncPushTimer) clearTimeout(syncPushTimer);
+    syncPushTimer = setTimeout(() => { pushRemoteState(state); }, 450);
+  }
+
+  async function pushRemoteState(state) {
+    if (!SYNC_ANON || SYNC_ANON.indexOf('__SYNC_') === 0) return;
+    try {
+      await fetch(SYNC_URL + '?on_conflict=id', {
+        method: 'POST',
+        headers: syncHeaders({
+          Prefer: 'resolution=merge-duplicates,return=minimal'
+        }),
+        body: JSON.stringify({
+          id: SYNC_ROW,
+          payload: state,
+          updated_at: new Date(state.updatedAt || Date.now()).toISOString()
+        }),
+        cache: 'no-store'
+      });
+    } catch (e) {}
+  }
+
+  async function pullRemoteState() {
+    if (!SYNC_ANON || SYNC_ANON.indexOf('__SYNC_') === 0) return null;
+    try {
+      const r = await fetch(
+        SYNC_URL + '?id=eq.' + encodeURIComponent(SYNC_ROW) + '&select=payload,updated_at',
+        { headers: syncHeaders(), cache: 'no-store' }
+      );
+      if (!r.ok) return null;
+      const rows = await r.json();
+      if (!rows || !rows[0]) return null;
+      const payload = rows[0].payload || {};
+      // Prefer payload.updatedAt; fall back to row timestamp
+      if (!payload.updatedAt && rows[0].updated_at) {
+        payload.updatedAt = Date.parse(rows[0].updated_at) || 0;
+      }
+      return payload;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function syncFromRemote(opts) {
+    opts = opts || {};
+    // Don't clobber while typing
+    if (!opts.force) {
+      const a = document.activeElement;
+      if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return;
+    }
+    const remote = await pullRemoteState();
+    if (!remote) return;
+    const remoteAt = Number(remote.updatedAt) || 0;
+    if (remoteAt > syncUpdatedAt) {
+      applyState(remote);
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) {}
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      applyState(d, { skipProgress: true, skipAlert: true });
+    } catch (e) {}
+  }
+
+  function readCommittedBalance() {
+    try {
+      const v = localStorage.getItem(BALANCE_KEY);
+      if (v == null || String(v).trim() === '') return NaN;
+      return parseFloat(v);
+    } catch (e) {
+      return NaN;
+    }
+  }
+
+  function saveBalancePersist(value) {
+    try {
+      const v = (value != null) ? String(value) : document.getElementById('q-balance').value;
+      localStorage.setItem(BALANCE_KEY, v);
+    } catch (e) {}
+  }
+
+  function saveBalancePctPersist(pct) {
+    try {
+      if (pct == null || !isFinite(pct)) localStorage.removeItem(BALANCE_PCT_KEY);
+      else localStorage.setItem(BALANCE_PCT_KEY, String(pct));
+    } catch (e) {}
+  }
+
+  function readBalancePctPersist() {
+    try {
+      const v = localStorage.getItem(BALANCE_PCT_KEY);
+      if (v == null || String(v).trim() === '') return NaN;
+      return parseFloat(v);
+    } catch (e) {
+      return NaN;
+    }
+  }
+
+  function loadBalancePersist() {
+    try {
+      const v = localStorage.getItem(BALANCE_KEY);
+      if (v != null && String(v).trim() !== '') {
+        document.getElementById('q-balance').value = v;
+      }
+    } catch (e) {}
+    // Restore last % change on refresh (don't recompute)
+    commitBalanceDisplay({ skipPctCalc: true });
+  }
+
+  function formatBalanceUsd(n) {
+    return n.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }) + ' USD';
+  }
+
+  function formatBalancePct(pct) {
+    const sign = pct > 0 ? '+' : '';
+    return sign + pct.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) + '%';
+  }
+
+  function renderBalancePct(pct) {
+    const pctEl = document.getElementById('q-balance-pct');
+    if (!pctEl) return;
+    if (pct == null || !isFinite(pct)) {
+      pctEl.hidden = true;
+      pctEl.textContent = '';
+      pctEl.className = 'balance-pct';
+      return;
+    }
+    pctEl.textContent = formatBalancePct(pct);
+    pctEl.className = 'balance-pct ' + (pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat');
+    pctEl.hidden = false;
+  }
+
+  function commitBalanceDisplay(opts) {
+    opts = opts || {};
+    const input = document.getElementById('q-balance');
+    const display = document.getElementById('q-balance-display');
+    const wrap = document.getElementById('q-balance-value-wrap');
+    if (!input || !display || !wrap) return;
+    const n = parseFloat(input.value);
+    if (isNaN(n) || String(input.value).trim() === '') {
+      wrap.hidden = true;
+      display.textContent = '';
+      renderBalancePct(NaN);
+      input.classList.remove('balance-hidden');
+      return;
+    }
+
+    if (!opts.skipPctCalc) {
+      const prev = readCommittedBalance();
+      // Compare to last committed value only when it actually changed
+      if (isFinite(prev) && prev !== 0 && n !== prev) {
+        const pct = ((n - prev) / Math.abs(prev)) * 100;
+        saveBalancePctPersist(pct);
+        renderBalancePct(pct);
+      } else if (n === prev) {
+        // Unchanged — keep last shown % if any
+        renderBalancePct(readBalancePctPersist());
+      } else {
+        // First balance ever — no comparison yet
+        saveBalancePctPersist(null);
+        renderBalancePct(NaN);
+      }
+      saveBalancePersist(n);
+    } else {
+      renderBalancePct(readBalancePctPersist());
+    }
+
+    display.textContent = formatBalanceUsd(n);
+    wrap.hidden = false;
+    input.classList.add('balance-hidden');
+  }
+
+  function editBalance() {
+    const input = document.getElementById('q-balance');
+    const wrap = document.getElementById('q-balance-value-wrap');
+    if (!input || !wrap) return;
+    wrap.hidden = true;
+    input.classList.remove('balance-hidden');
+    input.focus();
+    try { input.select(); } catch (e) {}
+  }
+
+  function resetBalance() {
+    const input = document.getElementById('q-balance');
+    if (!input) return;
+    input.value = '';
+    try {
+      localStorage.removeItem(BALANCE_KEY);
+      localStorage.removeItem(BALANCE_PCT_KEY);
+    } catch (e) {}
+    saveBalancePctPersist(null);
+    renderBalancePct(NaN);
+    const wrap = document.getElementById('q-balance-value-wrap');
+    const display = document.getElementById('q-balance-display');
+    if (wrap) wrap.hidden = true;
+    if (display) display.textContent = '';
+    input.classList.remove('balance-hidden');
+    clearError();
+    saveState();
+    input.focus();
+  }
+
+  function balanceKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      inputBlurCommit(e.target);
+    }
+  }
+
+  function inputBlurCommit(el) {
+    if (el && typeof el.blur === 'function') el.blur();
+    else commitBalanceDisplay();
+  }
+
+  function onBalanceInput() {
+    clearError();
+    // Don't overwrite committed balance while typing — needed for % vs last
+    saveState();
+  }
+
+  function onSizingInputs() {
+    clearError();
+    saveState();
+  }
+
+  function onTradeInputs() {
+    clearError();
+    // Editing Entry/TP must never chime; clear any stale "TP hit" banner
+    if (typeof clearSoundToast === 'function') clearSoundToast();
+    if (typeof resetTpSoundState === 'function') resetTpSoundState();
+    updateTargetProgress();
+    saveState();
+  }
+
   function clearInputs() {
+    // Balance is sticky — Clear never wipes it
     ['q-loss', 'q-profit', 'q-entry', 'q-exit'].forEach(id => {
       document.getElementById(id).value = '';
     });
+    document.getElementById('alert-level').value = '';
     document.getElementById('q-val').textContent = '—';
-    document.getElementById('q-coins').innerHTML = 'Coins to enter: —';
+    setResultTitle('Suggested Lot Size');
+    window.__alertDismissed = false;
+    window.__alertDir = 'below';
+    if (typeof alertDismissed !== 'undefined') alertDismissed = false;
+    if (typeof setAlertDir === 'function') setAlertDir('below', true);
+    if (typeof stopAlertBeep === 'function') stopAlertBeep();
+    if (typeof setAlertFiring === 'function') setAlertFiring(false);
+    if (typeof clearSoundToast === 'function') clearSoundToast();
+    if (typeof resetTpSoundState === 'function') resetTpSoundState();
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    saveBalancePersist();
+    // Push cleared trade fields but keep Balance in sync payload
+    const empty = collectState();
+    syncUpdatedAt = empty.updatedAt;
+    scheduleSyncPush(empty);
+    updateTargetProgress();
     clearError();
     document.getElementById('q-loss').focus();
   }
@@ -377,12 +1016,41 @@
     (ids || []).forEach(id => document.getElementById(id).classList.add('error'));
   }
 
+  // Lots = (Balance ÷ 17) × 5
+  const BASE_USD = 17;
+  const BASE_LOTS = 5;
+
+  function setResultTitle(title) {
+    const el = document.getElementById('q-result-title');
+    if (el) el.textContent = title;
+  }
+
   function calcQuantity() {
     clearError();
+    const balance = parseFloat(document.getElementById('q-balance').value);
     const loss = parseFloat(document.getElementById('q-loss').value);
     const profit = parseFloat(document.getElementById('q-profit').value);
     const entry = parseFloat(document.getElementById('q-entry').value);
     const exit = parseFloat(document.getElementById('q-exit').value);
+
+    const hasBalance = !isNaN(balance);
+    const othersEmpty = isNaN(loss) && isNaN(profit) && isNaN(entry) && isNaN(exit);
+
+    // Balance only → Suggested Lot Size = (Balance ÷ 17) × 5
+    if (hasBalance && othersEmpty) {
+      if (balance <= 0) {
+        showError('Balance must be greater than 0.', ['q-balance']);
+        return;
+      }
+      const lots = (balance / BASE_USD) * BASE_LOTS;
+      setResultTitle('Suggested Lot Size');
+      document.getElementById('q-val').textContent = lots.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      });
+      saveState();
+      return;
+    }
 
     const missing = [];
     if (isNaN(loss)) missing.push('q-loss');
@@ -390,7 +1058,7 @@
     if (isNaN(entry)) missing.push('q-entry');
     if (isNaN(exit)) missing.push('q-exit');
     if (missing.length) {
-      showError('Fill in all fields.', missing);
+      showError('Fill Balance only for lots, or fill Total Loss + Profit + Entry + TP.', missing);
       return;
     }
 
@@ -400,73 +1068,247 @@
       return;
     }
 
-    // USDT notional (position value) — recovers loss+profit when TP hits
+    // Full trade: USDT size from Total Loss + Profit + Entry + TP
     const usdt = ((loss + profit) * entry) / denom;
-    // Binance order qty is in coins: PnL ≈ coins × (TP − Entry)
-    const coins = (loss + profit) / denom;
-
+    setResultTitle('Suggested Size (USDT)');
     document.getElementById('q-val').textContent = usdt.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }) + ' USDT';
-    document.getElementById('q-coins').innerHTML =
-      'Coins to enter: <strong>' +
-      coins.toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 4
-      }) +
-      '</strong>';
+    });
+    saveState();
   }
 
-  let lastRemaining = null;
+  /* ---------- Shared audio (all 3 sounds) ---------- */
+  // Occasions:
+  //  1) New 15m candle — two mid beeps (edge: bucket change only)
+  //  2) Price alert — repeating beep while live price breaches Below/Above level (not on Clear)
+  //  3) TP hit — success chime once when progress crosses into >= 100%
+  let sharedAudioCtx = null;
+  let audioKeepAlive = null;
+  let lastCandleBucket = null;
+  let lastCandleSoundAt = 0;
+  let notifyReady = false;
+  let soundToastTimer = null;
 
-  function playBeep() {
+  function clearSoundToast() {
+    const el = document.getElementById('sound-toast');
+    if (!el) return;
+    if (soundToastTimer) clearTimeout(soundToastTimer);
+    soundToastTimer = null;
+    el.classList.remove('show');
+    el.textContent = '';
+  }
+
+  function flashSoundReason(text) {
+    const el = document.getElementById('sound-toast');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.add('show');
+    if (soundToastTimer) clearTimeout(soundToastTimer);
+    soundToastTimer = setTimeout(() => {
+      el.classList.remove('show');
+      el.textContent = '';
+    }, 2500);
+  }
+
+  function ensureAudio() {
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!sharedAudioCtx) sharedAudioCtx = new AC();
+      if (sharedAudioCtx.state === 'suspended') {
+        sharedAudioCtx.resume().catch(() => {});
+      }
+      return sharedAudioCtx;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Near-silent oscillator keeps AudioContext alive in background tabs
+  function startAudioKeepAlive() {
+    const ctx = ensureAudio();
+    if (!ctx || audioKeepAlive) return;
+    try {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      gain.gain.value = 0.00001;
+      osc.frequency.value = 40;
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.4);
+      audioKeepAlive = { osc, gain };
     } catch (e) {}
   }
 
+  let notifyPrompted = false;
+  const NOTIFY_SKIP_KEY = 'quantityCalculator.notifySkip.v1';
+
+  function syncNotifyReady() {
+    if (typeof Notification === 'undefined') return;
+    notifyReady = Notification.permission === 'granted';
+  }
+
+  // Ask at most once per visit — never on every click (that was the spam)
+  function maybeRequestNotify() {
+    if (typeof Notification === 'undefined') return;
+    syncNotifyReady();
+    if (Notification.permission === 'granted' || Notification.permission === 'denied') return;
+    if (notifyPrompted) return;
+    try {
+      if (localStorage.getItem(NOTIFY_SKIP_KEY) === '1') return;
+    } catch (e) {}
+    notifyPrompted = true;
+    Notification.requestPermission().then(p => {
+      notifyReady = p === 'granted';
+      // Remember dismiss/deny so refresh doesn't nag again
+      if (p !== 'granted') {
+        try { localStorage.setItem(NOTIFY_SKIP_KEY, '1'); } catch (e) {}
+      }
+    }).catch(() => {
+      try { localStorage.setItem(NOTIFY_SKIP_KEY, '1'); } catch (e) {}
+    });
+  }
+
+  function unlockAudio() {
+    ensureAudio();
+    startAudioKeepAlive();
+    syncNotifyReady();
+    // If alert was already firing before the first gesture, kick an audible beep now
+    if (typeof alertFiring !== 'undefined' && alertFiring && typeof playAlertBeep === 'function') {
+      try { playAlertBeep(); } catch (e) {}
+    }
+  }
+  document.addEventListener('pointerdown', unlockAudio, { passive: true });
+  document.addEventListener('keydown', unlockAudio, { passive: true });
+  document.addEventListener('touchstart', unlockAudio, { passive: true });
+  // One notification ask: first time user sets a price alert (not every tap)
+  document.addEventListener('pointerdown', function notifyOnceOnAlert(e) {
+    const t = e.target;
+    if (!t) return;
+    if (t.id === 'alert-level' || (t.closest && t.closest('#alert-slot'))) {
+      maybeRequestNotify();
+    }
+  }, { passive: true });
+  syncNotifyReady();
+
+  function playTone(freq, duration, type, volume, when) {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    startAudioKeepAlive();
+    const schedule = () => {
+      try {
+        const t0 = ctx.currentTime + (when || 0);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(Math.max(volume || 0.14, 0.001), t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.02);
+      } catch (e) {}
+    };
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(schedule).catch(() => {});
+    } else {
+      schedule();
+    }
+  }
+
+  function pingBackground(title, body, tag) {
+    if (!document.hidden) return;
+    if (!notifyReady || typeof Notification === 'undefined') return;
+    try {
+      const n = new Notification(title, {
+        body: body || '',
+        tag: tag || 'qty-calc',
+        silent: false,
+        renotify: true
+      });
+      setTimeout(() => { try { n.close(); } catch (e) {} }, 8000);
+    } catch (e) {}
+  }
+
+  // 1) New 15-min candle — two mid beeps (never on Clear / price edits)
+  function playCandleSound() {
+    try {
+      playTone(660, 0.18, 'sine', 0.16, 0);
+      playTone(880, 0.22, 'sine', 0.16, 0.2);
+      flashSoundReason('Sound: new 15-min candle');
+      pingBackground('15m candle', 'New 15-minute candle opened', 'qty-candle');
+    } catch (e) {}
+  }
+
+  // Binance/TradingView 15m candles use exchange UTC time (:00/:15/:30/:45).
+  // Old +22s "calibration" made our timer end early — removed.
+  let exchangeSkewMs = 0; // serverTime - localTime (RTT-corrected)
+
+  function exchangeNow() {
+    return Date.now() + exchangeSkewMs;
+  }
+
+  function syncBinanceTime() {
+    const t0 = Date.now();
+    fetch('https://fapi.binance.com/fapi/v1/time?_t=' + t0, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        const t1 = Date.now();
+        const serverTime = Number(d && d.serverTime);
+        if (!(serverTime > 0)) return;
+        // Midpoint of RTT ≈ when server stamped the response
+        exchangeSkewMs = serverTime + (t1 - t0) / 2 - t1;
+      })
+      .catch(() => {});
+  }
+
   function updateTimer() {
-    const pktOffsetMs = 5 * 60 * 60 * 1000; // PKT = UTC+5
-    const now = Date.now();
-    const pktNow = now + pktOffsetMs;
     const cycle = 15 * 60 * 1000;
-    const remainder = pktNow % cycle;
-    let remaining = cycle - remainder;
-    if (remaining <= 0) remaining = cycle;
-
-    remaining += 22 * 1000; // calibration offset
-
-    while (remaining > cycle) remaining -= cycle;
-    while (remaining <= 0) remaining += cycle;
+    const nowEx = exchangeNow();
+    const bucket = Math.floor(nowEx / cycle);
+    const remaining = cycle - (nowEx % cycle);
 
     const m = Math.floor(remaining / 60000);
     const s = Math.floor((remaining % 60000) / 1000);
     document.getElementById('timer').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
 
-    if (lastRemaining !== null && lastRemaining > 1000 && remaining <= 1000) {
-      playBeep();
+    // Only FORWARD bucket + must be near candle open (first 2s of bucket)
+    // + 60s cooldown (clock jumps / wake spam)
+    const now = Date.now();
+    const nearOpen = remaining > cycle - 2000;
+    if (
+      lastCandleBucket !== null &&
+      bucket === lastCandleBucket + 1 &&
+      nearOpen &&
+      now - lastCandleSoundAt > 60000
+    ) {
+      playCandleSound();
+      lastCandleSoundAt = now;
     }
-    lastRemaining = remaining;
+    lastCandleBucket = bucket;
   }
-  setInterval(updateTimer, 1000);
+  // Single timer only — dual intervals could double-beep at the bucket edge
+  syncBinanceTime();
+  setInterval(syncBinanceTime, 5 * 60 * 1000);
+  setInterval(updateTimer, 250);
   updateTimer();
 
   document.querySelectorAll('input[type="number"]').forEach(input => {
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); calcQuantity(); }
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      // Entry/TP alone drive target progress — don't flag Loss/Profit red
+      const loss = parseFloat(document.getElementById('q-loss').value);
+      const profit = parseFloat(document.getElementById('q-profit').value);
+      if (isNaN(loss) || isNaN(profit)) {
+        clearError();
+        updateTargetProgress();
+        return;
+      }
+      calcQuantity();
     });
   });
 
@@ -477,14 +1319,202 @@
   const SYMBOL = '1000PEPEUSDT';
   const SYM_LC = SYMBOL.toLowerCase();
   const REST_URL = 'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=' + SYMBOL;
-  const KLINES_URL = 'https://fapi.binance.com/fapi/v1/klines?symbol=' + SYMBOL + '&interval=15m&limit=120';
   const WS_URL = 'wss://fstream.binance.com/stream?streams=' +
-    SYM_LC + '@trade/' + SYM_LC + '@ticker/' + SYM_LC + '@kline_15m';
+    SYM_LC + '@trade/' + SYM_LC + '@ticker';
 
   const btPriceEl = document.getElementById('bt-price');
   const btChangeEl = document.getElementById('bt-change');
   const btLiveEl = document.getElementById('bt-live');
   const btStatusEl = document.getElementById('bt-status');
+  const progBadgeEl = document.getElementById('prog-badge');
+  const alertLevelEl = document.getElementById('alert-level');
+  const alertSlotEl = document.getElementById('alert-slot');
+  let progPaintKey = '';
+
+  /* ---------- Price alert: continuous beep while price breaches Below/Above ---------- */
+  let alertFiring = false;
+  let alertDismissed = !!window.__alertDismissed; // quiet until price clears back through the level
+  let alertBeepTimer = null;
+  let alertDir = (window.__alertDir === 'above') ? 'above' : 'below';
+
+  // 2) Price alert — harsh repeating beep (armed + sustained breach)
+  let alertBreachSince = 0; // require sustained breach (ignore single-tick wicks)
+  function playAlertBeep() {
+    try { playTone(920, 0.22, 'square', 0.12, 0); } catch (e) {}
+  }
+
+  function getAlertDir() {
+    return alertDir === 'above' ? 'above' : 'below';
+  }
+
+  function applyAlertDirUI(dir) {
+    const btn = document.getElementById('alert-dir-btn');
+    if (!btn) return;
+    const above = dir === 'above';
+    btn.textContent = above ? '↑' : '↓';
+    btn.title = above ? 'Alert when price goes above' : 'Alert when price goes below';
+    btn.setAttribute('aria-label', above ? 'Alert above' : 'Alert below');
+  }
+
+  function setAlertDir(dir, skipCheck) {
+    alertDir = (dir === 'above') ? 'above' : 'below';
+    window.__alertDir = alertDir;
+    applyAlertDirUI(alertDir);
+    alertDismissed = false;
+    window.__alertDismissed = false;
+    alertBreachSince = 0;
+    if (!skipCheck) {
+      checkPriceAlert();
+      saveState();
+    }
+  }
+
+  function toggleAlertDir() {
+    setAlertDir(getAlertDir() === 'above' ? 'below' : 'above');
+  }
+
+  window.setAlertDir = setAlertDir;
+  window.toggleAlertDir = toggleAlertDir;
+  window.getAlertDir = getAlertDir;
+  window.applyAlertDirUI = applyAlertDirUI;
+  applyAlertDirUI(alertDir);
+
+  // 3) Take profit — chime only after REAL sustained hit (not typing / single wick / stale toast)
+  let lastProgPct = null;
+  let lastTpChimeAt = 0;
+  let tpSeenAway = false;   // must observe clearly below TP before a hit can sound
+  let tpHitSince = 0;       // when pct first reached >= 100 this visit
+  let tpSoundPlayed = false;
+  let progColorSide = 'flat';
+
+  function resetTpSoundState() {
+    lastProgPct = null;
+    tpSeenAway = false;
+    tpHitSince = 0;
+    tpSoundPlayed = false;
+  }
+
+  function playTpSuccessSound() {
+    const now = Date.now();
+    if (now - lastTpChimeAt < 4000) return;
+    lastTpChimeAt = now;
+    try {
+      playTone(523.25, 0.28, 'sine', 0.18, 0);
+      playTone(659.25, 0.28, 'sine', 0.18, 0.12);
+      playTone(783.99, 0.28, 'sine', 0.18, 0.24);
+      playTone(1046.5, 0.35, 'sine', 0.18, 0.36);
+      flashSoundReason('Sound: take profit hit (100%+)');
+      pingBackground('Take profit', 'Target progress hit 100%', 'qty-tp');
+    } catch (e) {}
+  }
+
+  function isTradeFieldFocused() {
+    const a = document.activeElement;
+    return a && (a.id === 'q-entry' || a.id === 'q-exit');
+  }
+
+  function startAlertBeep(opts) {
+    opts = opts || {};
+    if (alertBeepTimer) return;
+    unlockAudio();
+    playAlertBeep();
+    // Only notify on a fresh alert arm — not when visibilitychange restarts the interval
+    if (opts.notify !== false) {
+      const dir = getAlertDir();
+      pingBackground(
+        'Price alert',
+        dir === 'above' ? 'Price is at or above your alert level' : 'Price is at or below your alert level',
+        'qty-alert'
+      );
+    }
+    // 500ms when visible; 1000ms is Chrome's bg minimum anyway
+    alertBeepTimer = setInterval(playAlertBeep, document.hidden ? 1000 : 500);
+  }
+
+  function stopAlertBeep() {
+    if (alertBeepTimer) {
+      clearInterval(alertBeepTimer);
+      alertBeepTimer = null;
+    }
+  }
+
+  function setAlertFiring(on) {
+    if (on === alertFiring) return;
+    alertFiring = on;
+    if (on) {
+      alertSlotEl.classList.add('firing');
+      alertLevelEl.classList.add('firing');
+      flashSoundReason(
+        getAlertDir() === 'above'
+          ? 'Sound: alert above — price hit your level'
+          : 'Sound: alert below — price hit your level'
+      );
+      startAlertBeep();
+    } else {
+      alertSlotEl.classList.remove('firing');
+      alertLevelEl.classList.remove('firing');
+      stopAlertBeep();
+    }
+  }
+
+  function onAlertLevelInput() {
+    alertDismissed = false;
+    window.__alertDismissed = false;
+    // Empty field = no alert (Clear / delete must never start a beep)
+    const level = parseFloat(alertLevelEl.value);
+    if (!Number.isFinite(level)) {
+      alertBreachSince = 0;
+      setAlertFiring(false);
+      saveState();
+      return;
+    }
+    checkPriceAlert();
+    saveState();
+  }
+
+  function dismissPriceAlert() {
+    alertDismissed = true;
+    window.__alertDismissed = true;
+    setAlertFiring(false);
+    saveState();
+  }
+
+  function checkPriceAlert() {
+    const raw = String(alertLevelEl.value || '').trim();
+    if (!raw) {
+      alertBreachSince = 0;
+      setAlertFiring(false);
+      return;
+    }
+    const level = parseFloat(raw);
+    if (!Number.isFinite(level) || !Number.isFinite(btPrice)) {
+      alertBreachSince = 0;
+      setAlertFiring(false);
+      return;
+    }
+    // Tiny buffer stops beep chatter when price wiggles on the level
+    const buf = Math.max(Math.abs(level) * 0.00008, 1e-10);
+    const dir = getAlertDir();
+    const breached = dir === 'above' ? (btPrice >= level) : (btPrice <= level);
+    const cleared = dir === 'above' ? (btPrice < level - buf) : (btPrice > level + buf);
+
+    if (breached) {
+      if (!alertBreachSince) alertBreachSince = Date.now();
+      // Must hold breach ~1.5s — one-tick wicks no longer beep
+      if (!alertDismissed && Date.now() - alertBreachSince >= 1500) {
+        setAlertFiring(true);
+      }
+    } else if (cleared) {
+      alertBreachSince = 0;
+      if (alertDismissed) {
+        alertDismissed = false;
+        window.__alertDismissed = false;
+        saveState();
+      }
+      setAlertFiring(false);
+    }
+    // else: in the small buffer zone — keep current state (no flicker)
+  }
 
   let btWs = null;
   let btWsAlive = false;
@@ -497,6 +1527,7 @@
   let btLocalTickAt = 0;   // local receive time
   let btPaintPrice = NaN;
   let btPaintChange = '';
+  let btLastChangePct = NaN; // last painted 24h % — blocks -100% glitch flashes
   let btRaf = 0;
   let btStatusKey = '';
 
@@ -504,9 +1535,14 @@
     const key = state + '|' + label;
     if (key === btStatusKey) return;
     btStatusKey = key;
+    const text = String(label || '').toUpperCase();
     btLiveEl.className = 'live-dot' + (state === 'on' ? ' on' : state === 'off' ? ' off' : '');
-    btLiveEl.title = label;
-    btStatusEl.textContent = label;
+    btStatusEl.textContent = text;
+    const wrap = btStatusEl.parentElement;
+    if (wrap) {
+      wrap.className = 'live-status' + (state === 'on' ? ' on' : state === 'off' ? ' off' : '');
+      wrap.title = text;
+    }
   }
 
   function fmtPrice(p) {
@@ -523,9 +1559,145 @@
     return ((price - btOpenPrice) / btOpenPrice) * 100;
   }
 
+  let lastStablePct = null; // last painted progress — reject sudden spike ticks
+  let progEntryRef = NaN;
+  let progTpRef = NaN;
+
+  function resolveProgColor(pct, atTpSustained) {
+    // Blue "hit" only after price holds at TP (same idea as TP chime) — no 1-tick blue flicker
+    if (atTpSustained) return 'hit';
+    // Stay blue only while still near/at TP
+    if (progColorSide === 'hit' && pct >= 90 && pct <= 115) return 'hit';
+    if (pct >= 0.5) return 'up';
+    if (pct <= -0.5) return 'down';
+    // Near 0%: keep last green/red so tiny wiggles don't flicker
+    if (progColorSide === 'up' || progColorSide === 'down' || progColorSide === 'hit') {
+      return progColorSide === 'hit' ? 'up' : progColorSide;
+    }
+    return pct >= 0 ? 'up' : 'down';
+  }
+
+  function paintProgIdle(key) {
+    resetTpSoundState();
+    progColorSide = 'flat';
+    lastStablePct = null;
+    if (progPaintKey !== key) {
+      progPaintKey = key;
+      progBadgeEl.textContent = '—';
+      progBadgeEl.className = 'prog-badge';
+    }
+  }
+
+  function updateTargetProgress() {
+    const entry = parseFloat(document.getElementById('q-entry').value);
+    const tp = parseFloat(document.getElementById('q-exit').value);
+    if (!Number.isFinite(entry) || !Number.isFinite(tp) || entry === tp) {
+      paintProgIdle('empty');
+      return;
+    }
+    if (!Number.isFinite(btPrice)) {
+      if (progPaintKey !== 'wait') {
+        progPaintKey = 'wait';
+        progBadgeEl.textContent = '—';
+        progBadgeEl.className = 'prog-badge';
+      }
+      return;
+    }
+
+    // Need a real Entry↔TP distance (stops tiny-gap → huge % math)
+    const minGap = Math.max(Math.abs(entry) * 0.005, 1e-8);
+    const gapOk = Math.abs(tp - entry) >= minGap;
+
+    if (!gapOk) {
+      paintProgIdle('badgap');
+      return;
+    }
+
+    // New Entry/TP levels → reset spike guard + TP sound state for this trade
+    if (entry !== progEntryRef || tp !== progTpRef) {
+      progEntryRef = entry;
+      progTpRef = tp;
+      lastStablePct = null;
+      tpHitSince = 0;
+      tpSeenAway = false;
+      tpSoundPlayed = false;
+      progColorSide = 'flat';
+    }
+
+    // While editing Entry/TP or applying cloud sync: freeze (no flash / no chime)
+    if (isTradeFieldFocused() || syncApplying) {
+      tpHitSince = 0;
+      return;
+    }
+
+    // Works for long (TP>Entry) and short (TP<Entry)
+    const pct = ((btPrice - entry) / (tp - entry)) * 100;
+    if (!Number.isFinite(pct)) {
+      paintProgIdle('nan');
+      return;
+    }
+
+    // Sane band only — never paint/chime on wild spikes (old bug: clamp showed +150% green)
+    if (pct < -30 || pct > 120) {
+      tpHitSince = 0;
+      return; // keep last stable badge
+    }
+
+    // Reject one-tick jumps (e.g. 10% → 150%) from sync/glitch frames
+    if (lastStablePct != null && Math.abs(pct - lastStablePct) > 35) {
+      tpHitSince = 0;
+      return;
+    }
+
+    // Explicit price check (more reliable than % alone for shorts)
+    const priceAtTp = tp > entry ? btPrice >= tp : btPrice <= tp;
+    // True TP zone only (not "way past" bogus levels)
+    const inTpZone = priceAtTp && pct >= 100 && pct <= 112;
+
+    if (!inTpZone) {
+      tpHitSince = 0;
+      if (pct < 95) {
+        tpSeenAway = true;
+        tpSoundPlayed = false;
+      }
+      const toast = document.getElementById('sound-toast');
+      if (toast && toast.classList.contains('show') && /take profit/i.test(toast.textContent || '')) {
+        clearSoundToast();
+      }
+    } else {
+      if (!tpHitSince) tpHitSince = Date.now();
+      // Must hold real TP ~1.5s after being away — no chime on spikes
+      if (tpSeenAway && !tpSoundPlayed && Date.now() - tpHitSince >= 1500) {
+        tpSoundPlayed = true;
+        playTpSuccessSound();
+      }
+    }
+    lastProgPct = pct;
+
+    const atTpSustained =
+      inTpZone &&
+      tpHitSince > 0 &&
+      (Date.now() - tpHitSince >= 750);
+    const cls = resolveProgColor(pct, atTpSustained);
+    progColorSide = cls;
+    const txt = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+    const key = cls + '|' + txt;
+    lastStablePct = pct;
+    if (key === progPaintKey) return;
+    progPaintKey = key;
+    progBadgeEl.textContent = txt;
+    progBadgeEl.className = 'prog-badge ' + cls;
+  }
+
+  // Logic (sounds) must NOT depend on rAF — browsers pause rAF in background tabs
+  function runPriceLogic() {
+    updateTargetProgress();
+    checkPriceAlert();
+  }
+
   function paint() {
     btRaf = 0;
-    if (!Number.isFinite(btPrice)) return;
+    if (!Number.isFinite(btPrice) || !(btPrice > 0)) return;
     const priceTxt = fmtPrice(btPrice);
     if (priceTxt !== btPaintPrice) {
       btPaintPrice = priceTxt;
@@ -533,9 +1705,14 @@
     }
     const c = changeFromOpen(btPrice);
     if (!Number.isFinite(c)) return;
+    // -100% flash = price≈0 or bad tick vs open — never paint those
+    if (c <= -99.5 || c >= 500) return;
+    // One-frame spike (e.g. +1.7% → -100%) — keep last good %
+    if (Number.isFinite(btLastChangePct) && Math.abs(c - btLastChangePct) > 40) return;
     const changeTxt = fmtChange(c);
     if (changeTxt !== btPaintChange) {
       btPaintChange = changeTxt;
+      btLastChangePct = c;
       btChangeEl.textContent = changeTxt;
       btChangeEl.className = 'trade-change ' + (c >= 0 ? 'up' : 'down');
     }
@@ -549,13 +1726,22 @@
   function pushPrice(price, eventTs) {
     const p = Number(price);
     const ts = Number(eventTs) || 0;
-    if (!Number.isFinite(p)) return;
+    if (!Number.isFinite(p) || !(p > 0)) return;
     if (ts && btEventTs && ts < btEventTs) return;
+    // Reject absurd single-tick jumps (causes -100% 24h flash)
+    if (Number.isFinite(btPrice) && btPrice > 0) {
+      const ratio = p / btPrice;
+      if (ratio < 0.5 || ratio > 2) return;
+    }
+    if (Number.isFinite(btOpenPrice) && btOpenPrice > 0) {
+      const vsOpen = p / btOpenPrice;
+      if (vsOpen < 0.05 || vsOpen > 20) return;
+    }
     btPrice = p;
     if (ts) btEventTs = ts;
     btLocalTickAt = Date.now();
+    runPriceLogic(); // always — even when tab is hidden
     queuePaint();
-    applyLivePriceToVol(p, ts || Date.now());
   }
 
   function setOpen(open) {
@@ -563,6 +1749,7 @@
     if (!(o > 0)) return;
     if (o !== btOpenPrice) {
       btOpenPrice = o;
+      btLastChangePct = NaN; // new 24h window — allow fresh %
       queuePaint(); // refresh % instantly when 24h window open moves
     }
   }
@@ -610,7 +1797,7 @@
   function onLiveMsg() {
     if (!btWsAlive) {
       btWsAlive = true;
-      setLiveStatus('on', 'Live');
+      setLiveStatus('on', 'LIVE');
     }
   }
 
@@ -635,324 +1822,8 @@
       return;
     }
 
-    // Live 15m candle → volatility updates on candle close
-    if (e === 'kline' || stream.indexOf('@kline_') !== -1) {
-      onLiveMsg();
-      if (d.k) upsertVolKline(d.k);
-    }
+    // (kline / volatility removed — target progress uses live price + Entry/TP)
   }
-
-  /* ---------- Volatility: ATR% heat + Bollinger/Keltner squeeze ---------- */
-  // Base level = closed 15m candles (stable).
-  // Live spike = if the forming candle's range is already huge vs ATR, bump level up.
-  // That gives "market is spiking NOW" without the old Low→High refresh flicker.
-  const volBadgeEl = document.getElementById('vol-badge');
-  const VOL_LABELS = {
-    'very-low': 'Very Low',
-    low: 'Low',
-    medium: 'Medium',
-    high: 'High'
-  };
-  const VOL_RANK = { 'very-low': 0, low: 1, medium: 2, high: 3 };
-  const VOL_MS = 15 * 60 * 1000;
-
-  let volCandles = []; // {t,o,h,l,c,closed}
-  let volPaintKey = '';
-  let volRaf = 0;
-  let volRestBusy = false;
-  let volStickyLevel = null; // hysteresis on closed-candle base only
-  let volLiveTimer = null;
-
-  function sanitizeBar(t, o, h, l, c, closed) {
-    o = Number(o); h = Number(h); l = Number(l); c = Number(c);
-    if (![t, o, h, l, c].every(Number.isFinite)) return null;
-    if (!(o > 0 && h > 0 && l > 0 && c > 0)) return null;
-    const hi = Math.max(o, h, l, c);
-    const lo = Math.min(o, h, l, c);
-    return { t: t, o: o, h: hi, l: lo, c: c, closed: !!closed };
-  }
-
-  function getFormingCandle() {
-    if (!volCandles.length) return null;
-    const last = volCandles[volCandles.length - 1];
-    return last.closed ? null : last;
-  }
-
-  function getClosedCandles() {
-    if (!volCandles.length) return [];
-    const last = volCandles[volCandles.length - 1];
-    return last.closed ? volCandles.slice() : volCandles.slice(0, -1);
-  }
-
-  function hotterLevel(a, b) {
-    if (!a) return b;
-    if (!b) return a;
-    return VOL_RANK[a] >= VOL_RANK[b] ? a : b;
-  }
-
-  function upsertVolBar(bar) {
-    if (!bar) return;
-    const last = volCandles[volCandles.length - 1];
-    let shouldPaint = false;
-    let liveUpdate = false;
-
-    if (last && last.t === bar.t) {
-      const wasClosed = last.closed;
-      const changed = last.h !== bar.h || last.l !== bar.l || last.c !== bar.c;
-      last.o = bar.o;
-      last.h = Math.max(last.h, bar.h);
-      last.l = Math.min(last.l, bar.l);
-      last.c = bar.c;
-      last.closed = bar.closed || last.closed;
-      if (last.closed && !wasClosed) shouldPaint = true;
-      else if (!last.closed && changed) liveUpdate = true;
-    } else if (!last || bar.t > last.t) {
-      if (last && !last.closed) {
-        last.closed = true;
-        shouldPaint = true;
-      }
-      volCandles.push(bar);
-      if (volCandles.length > 120) volCandles.shift();
-      shouldPaint = true;
-    } else {
-      for (let i = volCandles.length - 1; i >= 0; i--) {
-        if (volCandles[i].t === bar.t) {
-          volCandles[i].h = Math.max(volCandles[i].h, bar.h);
-          volCandles[i].l = Math.min(volCandles[i].l, bar.l);
-          volCandles[i].c = bar.c;
-          if (bar.closed) {
-            volCandles[i].closed = true;
-            shouldPaint = true;
-          }
-          break;
-        }
-      }
-    }
-    if (shouldPaint) queueVolPaint(true);
-    else if (liveUpdate) queueVolPaint(false);
-  }
-
-  function upsertVolKline(k) {
-    upsertVolBar(sanitizeBar(k.t, k.o, k.h, k.l, k.c, !!k.x));
-  }
-
-  // Live trades widen the forming candle so spikes show before the next kline msg
-  function applyLivePriceToVol(price, eventTs) {
-    if (!volCandles.length || !Number.isFinite(price)) return;
-    const t = Math.floor(Number(eventTs || Date.now()) / VOL_MS) * VOL_MS;
-    const last = volCandles[volCandles.length - 1];
-    if (!last || last.closed) return;
-    if (last.t !== t) return;
-    let changed = false;
-    if (price > last.h) { last.h = price; changed = true; }
-    if (price < last.l) { last.l = price; changed = true; }
-    if (price !== last.c) { last.c = price; changed = true; }
-    if (changed) queueVolPaint(false);
-  }
-
-  function sma(arr, from, n) {
-    let s = 0;
-    for (let i = from; i < from + n; i++) s += arr[i];
-    return s / n;
-  }
-
-  function stdevPop(arr, from, n, mean) {
-    let s = 0;
-    for (let i = from; i < from + n; i++) {
-      const d = arr[i] - mean;
-      s += d * d;
-    }
-    return Math.sqrt(s / n);
-  }
-
-  function emaLast(arr, n) {
-    if (arr.length < n) return NaN;
-    const k = 2 / (n + 1);
-    let e = sma(arr, 0, n);
-    for (let i = n; i < arr.length; i++) e = arr[i] * k + e * (1 - k);
-    return e;
-  }
-
-  function wilderAtrSeries(trs, len) {
-    if (trs.length < len) return [];
-    let atr = 0;
-    for (let i = 0; i < len; i++) atr += trs[i];
-    atr /= len;
-    const out = new Array(trs.length - len + 1);
-    out[0] = atr;
-    for (let i = len; i < trs.length; i++) {
-      atr = (atr * (len - 1) + trs[i]) / len;
-      out[i - len + 1] = atr;
-    }
-    return out;
-  }
-
-  function percentileRank(values, current) {
-    if (!values.length || !Number.isFinite(current)) return NaN;
-    let below = 0;
-    for (let i = 0; i < values.length; i++) {
-      if (values[i] <= current) below++;
-    }
-    return (below / values.length) * 100;
-  }
-
-  // Hysteresis on closed-candle base only
-  function decideBaseLevel(heatPct, squeeze) {
-    const prev = volStickyLevel;
-    const stayHigh = prev === 'high' ? 68 : 75;
-    const stayMed = prev === 'medium' ? 48 : 55;
-
-    if (heatPct >= stayHigh) return 'high';
-    if (squeeze && heatPct < stayMed) return 'very-low';
-    if (heatPct >= stayMed) return 'medium';
-    return 'low';
-  }
-
-  // Forming candle already much wider than normal ATR → market spiking now
-  function liveSpikeLevel(atr14, lastClosedClose) {
-    const forming = getFormingCandle();
-    if (!forming || !(atr14 > 0)) return null;
-    const prevClose = lastClosedClose > 0 ? lastClosedClose : forming.o;
-    const tr = Math.max(
-      forming.h - forming.l,
-      Math.abs(forming.h - prevClose),
-      Math.abs(forming.l - prevClose)
-    );
-    const ratio = tr / atr14;
-    // Only exceptional spikes — normal bar growth stays quiet
-    if (ratio >= 2.0) return 'high';
-    if (ratio >= 1.25) return 'medium';
-    return null;
-  }
-
-  function computeVol() {
-    const candles = getClosedCandles();
-    const n = candles.length;
-    if (n < 40) return null;
-
-    const closes = new Array(n);
-    for (let i = 0; i < n; i++) closes[i] = candles[i].c;
-
-    const trs = new Array(n - 1);
-    for (let i = 1; i < n; i++) {
-      const c = candles[i];
-      const prev = candles[i - 1].c;
-      trs[i - 1] = Math.max(c.h - c.l, Math.abs(c.h - prev), Math.abs(c.l - prev));
-    }
-
-    const atr14Series = wilderAtrSeries(trs, 14);
-    if (!atr14Series.length) return null;
-    const atr14 = atr14Series[atr14Series.length - 1];
-    const close = closes[n - 1];
-    if (!(close > 0) || !Number.isFinite(atr14)) return null;
-    const atrPct = (atr14 / close) * 100;
-
-    const atrPctHist = [];
-    for (let i = 0; i < atr14Series.length; i++) {
-      const cIdx = i + 14;
-      if (closes[cIdx] > 0) atrPctHist.push((atr14Series[i] / closes[cIdx]) * 100);
-    }
-    const heatPct = percentileRank(atrPctHist, atrPct);
-    if (!Number.isFinite(heatPct)) return null;
-
-    const bbLen = 20;
-    const atr20Series = wilderAtrSeries(trs, bbLen);
-    if (!atr20Series.length) return null;
-    const atr20 = atr20Series[atr20Series.length - 1];
-    if (!Number.isFinite(atr20)) return null;
-
-    const from = n - bbLen;
-    const mid = sma(closes, from, bbLen);
-    const sd = stdevPop(closes, from, bbLen, mid);
-    if (!Number.isFinite(mid) || !Number.isFinite(sd)) return null;
-
-    const bbUpper = mid + 2 * sd;
-    const bbLower = mid - 2 * sd;
-    const kelMid = emaLast(closes, bbLen);
-    if (!Number.isFinite(kelMid)) return null;
-    const kelUpper = kelMid + 1.5 * atr20;
-    const kelLower = kelMid - 1.5 * atr20;
-    const squeeze = bbUpper < kelUpper && bbLower > kelLower;
-
-    const base = decideBaseLevel(heatPct, squeeze);
-    const live = liveSpikeLevel(atr14, close);
-    // Live spike can only raise the level (never hide a closed-candle High)
-    const level = hotterLevel(base, live);
-    return { level: level, label: VOL_LABELS[level], base: base };
-  }
-
-  function paintVol() {
-    volRaf = 0;
-    const v = computeVol();
-    if (!v) {
-      if (getClosedCandles().length < 40) {
-        volBadgeEl.textContent = 'Loading…';
-        volBadgeEl.className = 'vol-badge';
-        volPaintKey = '';
-        volStickyLevel = null;
-      }
-      return;
-    }
-    // Sticky hysteresis follows closed-candle base, not live bumps
-    volStickyLevel = v.base;
-    const key = v.level + '|' + v.label;
-    if (key === volPaintKey) return;
-    volPaintKey = key;
-    volBadgeEl.textContent = v.label;
-    volBadgeEl.className = 'vol-badge ' + v.level;
-  }
-
-  function queueVolPaint(immediate) {
-    if (immediate) {
-      if (volLiveTimer) {
-        clearTimeout(volLiveTimer);
-        volLiveTimer = null;
-      }
-      if (!volRaf) volRaf = requestAnimationFrame(paintVol);
-      return;
-    }
-    // Throttle live-spike checks (~3/sec) so normal ticks don't thrash
-    if (volLiveTimer) return;
-    volLiveTimer = setTimeout(() => {
-      volLiveTimer = null;
-      if (!volRaf) volRaf = requestAnimationFrame(paintVol);
-    }, 350);
-  }
-
-  function fetchVolKlines() {
-    if (volRestBusy) return;
-    volRestBusy = true;
-    fetch(KLINES_URL + '&_t=' + Date.now(), { cache: 'no-store' })
-      .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(rows => {
-        if (!Array.isArray(rows) || !rows.length) return;
-        const mapped = [];
-        for (let i = 0; i < rows.length; i++) {
-          const r = rows[i];
-          // REST: every bar except the last is closed
-          const bar = sanitizeBar(r[0], r[1], r[2], r[3], r[4], i < rows.length - 1);
-          if (bar) mapped.push(bar);
-        }
-        if (!mapped.length) return;
-        volCandles = mapped;
-        queueVolPaint();
-      })
-      .catch(() => {
-        if (!volCandles.length) {
-          volBadgeEl.textContent = 'Unavailable';
-          volBadgeEl.className = 'vol-badge';
-          volPaintKey = '';
-          volStickyLevel = null;
-        }
-      })
-      .finally(() => { volRestBusy = false; });
-  }
-
-  fetchVolKlines();
-  setInterval(fetchVolKlines, 120000); // history resync; levels move on candle close
 
   function connectWs() {
     if (btWs) {
@@ -973,9 +1844,8 @@
 
     ws.onopen = () => {
       btBackoffMs = 1000;
-      setLiveStatus('on', 'Live');
+      setLiveStatus('on', 'LIVE');
       fetchRest();
-      fetchVolKlines(); // resync candles after reconnect
     };
 
     ws.onmessage = (ev) => {
@@ -1006,14 +1876,171 @@
   }, 10000);
 
   document.addEventListener('visibilitychange', () => {
+    ensureAudio();
+    startAudioKeepAlive();
+    // Re-pace alert beeps for bg timer throttling — do NOT re-notify
+    if (alertFiring) {
+      stopAlertBeep();
+      startAlertBeep({ notify: false });
+    }
     if (document.visibilityState === 'visible') {
       paint();
-      queueVolPaint();
+      runPriceLogic();
       if (!btWsAlive && !btReconnectTimer) connectWs();
       fetchRest();
-      fetchVolKlines();
     }
   });
+
+  // Safety net: still evaluate TP/alert on last price if a WS tick was skipped while bg-throttled
+  setInterval(() => {
+    if (!Number.isFinite(btPrice)) return;
+    ensureAudio();
+    runPriceLogic();
+  }, 1000);
+
+  function ordinalDay(n) {
+    const v = n % 100;
+    if (v >= 11 && v <= 13) return n + 'th';
+    switch (n % 10) {
+      case 1: return n + 'st';
+      case 2: return n + 'nd';
+      case 3: return n + 'rd';
+      default: return n + 'th';
+    }
+  }
+
+  function updateClockSubtitle() {
+    const el = document.getElementById('clock-sub');
+    if (!el) return;
+    const now = new Date();
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const datePart = days[now.getDay()] + ', ' + ordinalDay(now.getDate()) + ' ' + months[now.getMonth()];
+    const timePart = now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    el.textContent = datePart + ' · ' + timePart;
+  }
+
+  updateClockSubtitle();
+  setInterval(updateClockSubtitle, 1000);
+
+  // Restore inputs / size / alert after refresh (Clear is the only wipe)
+  loadState();
+  loadBalancePersist(); // sticky Balance always wins over cleared main state
+  alertDismissed = !!window.__alertDismissed;
+  resetTpSoundState();
+  updateTargetProgress(); // seeds baseline only — no TP chime on restore
+  checkPriceAlert();
+
+  // Phone ↔ desktop: pull shared Entry/TP/etc, then keep polling
+  (async function initCloudSync() {
+    const localAt = syncUpdatedAt || 0;
+    const remote = await pullRemoteState();
+    if (remote) {
+      const remoteAt = Number(remote.updatedAt) || 0;
+      if (remoteAt > localAt) {
+        applyState(remote);
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) {}
+      } else if (localAt > remoteAt) {
+        pushRemoteState(collectState());
+      }
+    } else if (localAt > 0) {
+      pushRemoteState(collectState());
+    }
+    alertDismissed = !!window.__alertDismissed;
+    updateTargetProgress();
+    checkPriceAlert();
+    setInterval(() => { syncFromRemote(); }, 5000);
+  })();
+
+  /* ---------- Phone: always keep awake + install / Add to Home Screen ---------- */
+  let wakeLock = null;
+  let deferredInstallPrompt = null;
+
+  function isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent || '') ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+  }
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return false;
+    if (wakeLock) return true;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+      return true;
+    } catch (e) {
+      wakeLock = null;
+      return false;
+    }
+  }
+
+  // Always on: re-acquire when tab is visible again (OS may drop the lock)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      requestWakeLock();
+      syncFromRemote({ force: true });
+    }
+  });
+  // Browsers often require a user gesture the first time
+  document.addEventListener('pointerdown', () => { requestWakeLock(); }, { passive: true });
+  document.addEventListener('touchstart', () => { requestWakeLock(); }, { passive: true });
+
+  function updateInstallUI() {
+    const installBtn = document.getElementById('install-btn');
+    const iosTip = document.getElementById('ios-install-tip');
+    if (isStandalone()) {
+      if (installBtn) installBtn.hidden = true;
+      if (iosTip) iosTip.hidden = true;
+      return;
+    }
+    if (deferredInstallPrompt && installBtn) {
+      installBtn.hidden = false;
+      if (iosTip) iosTip.hidden = true;
+      return;
+    }
+    if (installBtn) installBtn.hidden = true;
+    if (iosTip) iosTip.hidden = !isIos();
+  }
+
+  function promptInstall() {
+    if (!deferredInstallPrompt) {
+      updateInstallUI();
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(() => {
+      deferredInstallPrompt = null;
+      updateInstallUI();
+    });
+  }
+  window.promptInstall = promptInstall;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallUI();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    updateInstallUI();
+  });
+
+  updateInstallUI();
+  requestWakeLock();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 </script>
 
 </body>

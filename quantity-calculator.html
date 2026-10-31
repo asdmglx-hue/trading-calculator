@@ -157,12 +157,6 @@
     padding: 6px 8px;
     font-size: 13px;
   }
-  .settings-hint {
-    margin-top: 8px;
-    font-size: 11px;
-    color: #64748b;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  }
   h2 {
     margin: 0 0 16px;
     font-size: 16px;
@@ -675,7 +669,6 @@
             <label for="set-base-usd">Lots base USD</label>
             <input type="number" id="set-base-usd" step="any" min="0.01" value="17" oninput="onSettingsChange()">
           </div>
-          <div id="settings-hint" class="settings-hint">Lots = (Balance ÷ 17) × 5</div>
         </div>
       </div>
     </div>
@@ -702,7 +695,7 @@
           <input type="number" id="q-profit" step="any" placeholder="e.g. 100" oninput="onSizingInputs()">
         </div>
         <div class="input-group">
-          <label>Entry</label>
+          <label>Entry Price</label>
           <input type="number" id="q-entry" step="any" placeholder="e.g. 1.2500" oninput="onTradeInputs()">
         </div>
         <div class="input-group">
@@ -789,12 +782,6 @@
     return (isFinite(n) && n > 0) ? n : 17;
   }
 
-  function updateSettingsHint() {
-    const el = document.getElementById('settings-hint');
-    if (!el) return;
-    el.textContent = 'Lots = (Balance ÷ ' + getBaseUsd() + ') × 5';
-  }
-
   function applySettingsToUI() {
     const c = document.getElementById('set-sound-candle');
     const a = document.getElementById('set-sound-alert');
@@ -804,7 +791,6 @@
     if (a) a.checked = !!appSettings.soundAlert;
     if (t) t.checked = !!appSettings.soundTp;
     if (u) u.value = String(getBaseUsd());
-    updateSettingsHint();
   }
 
   function readSettingsFromUI() {
@@ -854,7 +840,6 @@
   function onSettingsChange() {
     readSettingsFromUI();
     saveSettings();
-    updateSettingsHint();
   }
 
   function closeSettingsIfOutside(e) {
